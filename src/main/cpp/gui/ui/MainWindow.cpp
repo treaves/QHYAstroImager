@@ -8,9 +8,11 @@
 #include "ui_MainWindow.h"
 
 #include <QAction>
+#include <qhyccd.h>
 #include <QMessageBox>
 #include <QSettings>
-#include <QStandardPaths>
+#include <QDebug>
+#include <qglobal.h>
 
 #include "About.hpp"
 #include "Config.h"
@@ -22,6 +24,11 @@ MainWindow::MainWindow(QWidget * parent)
    ui->setupUi(this);
    readSettings();
    createMenus();
+
+   quint32 qhyResult = InitQHYCCDResource();
+   if(qhyResult != QHYCCD_SUCCESS) {
+      qCritical() << "InitQHYCCDResource: failed";
+   }
 }
 
 MainWindow::~MainWindow()
@@ -52,6 +59,10 @@ void MainWindow::createMenus()
    auto * action = new QAction(tr("&Connect camera")); // NOLINT(cppcoreguidelines-owning-memory)
    connect(action, &QAction::triggered, this, &MainWindow::connectToCamera);
    action->setStatusTip(tr("Connect to camera."));
+   menu->addAction(action);
+   action = new QAction(tr("&Scan")); // NOLINT(cppcoreguidelines-owning-memory)
+   connect(action, &QAction::triggered, this, &MainWindow::populateCameraList);
+   action->setStatusTip(tr("Scan for cameras."));
    menu->addAction(action);
 
    menu   = menuBar()->addMenu(tr("&Help"));
@@ -94,4 +105,10 @@ void MainWindow::displayAboutDialog() const
 {
    About aboutDialog;
    aboutDialog.exec();
+}
+
+void MainWindow::populateCameraList()
+{
+   quint32 num = ScanQHYCCD();
+   qDebug() << "Cameras found:" << num;
 }

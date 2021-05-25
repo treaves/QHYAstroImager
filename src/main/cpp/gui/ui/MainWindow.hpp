@@ -33,6 +33,7 @@ private slots:
    void connectToCamera();
    void disconnectFromCamera();
    void displayAboutDialog() const;
+   void populateCameraList();
 
 private:
    void             createMenus();

@@ -47,10 +47,12 @@ else()
   )
 endif()
 
+target_include_directories(QHYAstroImager PRIVATE ${QHYCCD_INCLUDE_DIRS})
+
 target_link_libraries(
   QHYAstroImager
   PUBLIC Qt5::Core Qt5::Widgets
-  PRIVATE qhyccd project_warnings project_options
+  PRIVATE qhyccd project_warnings project_options ${QHYCCD_LIBRARIES}
 )
 
 target_compile_features(QHYAstroImager PUBLIC cxx_nullptr cxx_lambdas)
