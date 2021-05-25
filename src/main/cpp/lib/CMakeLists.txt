@@ -2,19 +2,16 @@
 
 # ######################################################################################################################
 # ##########                                      Library Source Files                                        ##########
-set(SOURCES
-)
+set(SOURCES)
 
-set(HEADERS
-)
+set(HEADERS)
 
-set(PRIVATE_SOURCE
-)
+set(PRIVATE_SOURCE)
 
 add_library(qhyccd STATIC ${SOURCES} ${HEADERS} ${PRIVATE_SOURCE})
 
 target_link_libraries(
-   qhyccd
+  qhyccd
   PUBLIC Qt5::Core Qt5::Widgets
   PRIVATE project_warnings project_options
 )

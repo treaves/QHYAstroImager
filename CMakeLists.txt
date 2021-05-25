@@ -56,13 +56,16 @@ option(ENABLE_TESTING "Enable Test Builds" ON)
 
 # ######################################################################################################################
 # ##########                                           Dependencies                                           ##########
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules /usr/local/cmake_modules)
+list(
+  APPEND
+  CMAKE_MODULE_PATH
+  ${PROJECT_SOURCE_DIR}/CMakeModules
+  /usr/local/cmake_modules
+)
 
 find_package(
   Qt5 5.8
-  COMPONENTS Core
-             Test
-             Widgets
+  COMPONENTS Core Test Widgets
   REQUIRED
 )
 

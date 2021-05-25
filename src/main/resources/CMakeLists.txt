@@ -1,1 +1,1 @@
-SET(QHYAstroImager_RESOURCES resources.qrc)
+set(QHYAstroImager_RESOURCES resources.qrc)

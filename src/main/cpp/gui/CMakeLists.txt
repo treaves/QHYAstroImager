@@ -7,16 +7,9 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/ui)
 # ##########                                          Source Files                                            ##########
 set(UIS ui/About.ui ui/MainWindow.ui)
 
-set(SOURCES
-    main.cpp
-   ui/About.cpp
-   ui/MainWindow.cpp
-)
+set(SOURCES main.cpp ui/About.cpp ui/MainWindow.cpp)
 
-set(HEADERS
-   ui/About.hpp
-   ui/MainWindow.hpp
-)
+set(HEADERS ui/About.hpp ui/MainWindow.hpp)
 
 # ######################################################################################################################
 # ##########                                       Executable Creation                                        ##########
@@ -36,9 +29,22 @@ if(APPLE)
   # put the icon into the Resources directory of the App bundle.
   set_source_files_properties(${ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
-  add_executable(QHYAstroImager MACOSX_BUNDLE ${HEADERS} ${SOURCES} ${UIS} ${RESOURCES} ${ICON})
+  add_executable(
+    QHYAstroImager MACOSX_BUNDLE
+    ${HEADERS}
+    ${SOURCES}
+    ${UIS}
+    ${RESOURCES}
+    ${ICON}
+  )
 else()
-  add_executable(QHYAstroImager ${HEADERS} ${SOURCES} ${UIS} ${RESOURCES})
+  add_executable(
+    QHYAstroImager
+    ${HEADERS}
+    ${SOURCES}
+    ${UIS}
+    ${RESOURCES}
+  )
 endif()
 
 target_link_libraries(
