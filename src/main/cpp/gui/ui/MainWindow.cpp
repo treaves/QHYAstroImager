@@ -12,8 +12,8 @@
 #include <QSettings>
 #include <QStandardPaths>
 
-#include "Config.h"
 #include "About.hpp"
+#include "Config.h"
 
 MainWindow::MainWindow(QWidget * parent)
    : QMainWindow(parent)
@@ -49,14 +49,13 @@ void MainWindow::closeEvent(QCloseEvent * event)
 void MainWindow::createMenus()
 {
    auto * menu   = menuBar()->addMenu(tr("&File"));
-
-   auto * action = new QAction(tr("&Connect camera"), this); // NOLINT(cppcoreguidelines-owning-memory)
+   auto * action = new QAction(tr("&Connect camera")); // NOLINT(cppcoreguidelines-owning-memory)
    connect(action, &QAction::triggered, this, &MainWindow::connectToCamera);
    action->setStatusTip(tr("Connect to camera."));
    menu->addAction(action);
 
-   menu   = menuBar()->addMenu(tr("Help"));
-   action = new QAction(tr("&About"), this); // NOLINT(cppcoreguidelines-owning-memory)
+   menu   = menuBar()->addMenu(tr("&Help"));
+   action = new QAction(tr("&About")); // NOLINT(cppcoreguidelines-owning-memory)
    connect(action, &QAction::triggered, this, &MainWindow::displayAboutDialog);
    action->setStatusTip(tr("About."));
    menu->addAction(action);

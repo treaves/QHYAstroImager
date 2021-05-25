@@ -35,9 +35,9 @@ private slots:
    void displayAboutDialog() const;
 
 private:
-   Ui::MainWindow * ui;
-
    void             createMenus();
    void             readSettings();
    void             writeSettings();
+
+   Ui::MainWindow * ui;
 };
