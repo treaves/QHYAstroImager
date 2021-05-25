@@ -8,17 +8,12 @@
 #include "ui_MainWindow.h"
 
 #include <QAction>
-#include <QDebug>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QMenu>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStandardPaths>
 
 #include "Config.h"
+#include "About.hpp"
 
 MainWindow::MainWindow(QWidget * parent)
    : QMainWindow(parent)
@@ -55,10 +50,15 @@ void MainWindow::createMenus()
 {
    auto * menu   = menuBar()->addMenu(tr("&File"));
 
-   auto * action = new QAction(tr("&Connect camera"),
-                               this); // NOLINT(cppcoreguidelines-owning-memory)
+   auto * action = new QAction(tr("&Connect camera"), this); // NOLINT(cppcoreguidelines-owning-memory)
    connect(action, &QAction::triggered, this, &MainWindow::connectToCamera);
-   action->setStatusTip(tr("Connect to a QHYCCD camera."));
+   action->setStatusTip(tr("Connect to camera."));
+   menu->addAction(action);
+
+   menu   = menuBar()->addMenu(tr("Help"));
+   action = new QAction(tr("&About"), this); // NOLINT(cppcoreguidelines-owning-memory)
+   connect(action, &QAction::triggered, this, &MainWindow::displayAboutDialog);
+   action->setStatusTip(tr("About."));
    menu->addAction(action);
 }
 
@@ -89,4 +89,10 @@ void MainWindow::connectToCamera()
 void MainWindow::disconnectFromCamera()
 {
    //
+}
+
+void MainWindow::displayAboutDialog() const
+{
+   About aboutDialog;
+   aboutDialog.exec();
 }

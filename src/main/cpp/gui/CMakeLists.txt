@@ -5,15 +5,17 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/ui)
 
 # ######################################################################################################################
 # ##########                                          Source Files                                            ##########
-set(UIS ui/MainWindow.ui)
+set(UIS ui/About.ui ui/MainWindow.ui)
 
 set(SOURCES
     main.cpp
-    ui/MainWindow.cpp
+   ui/About.cpp
+   ui/MainWindow.cpp
 )
 
 set(HEADERS
-    ui/MainWindow.hpp
+   ui/About.hpp
+   ui/MainWindow.hpp
 )
 
 # ######################################################################################################################

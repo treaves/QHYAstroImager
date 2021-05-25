@@ -11,7 +11,6 @@
 #include <QList>
 #include <QMainWindow>
 
-class UltimarcWidget;
 
 namespace Ui
 {
@@ -33,9 +32,10 @@ protected:
 private slots:
    void connectToCamera();
    void disconnectFromCamera();
+   void displayAboutDialog() const;
 
 private:
-   Ui::MainWindow * ui{};
+   Ui::MainWindow * ui;
 
    void             createMenus();
    void             readSettings();
