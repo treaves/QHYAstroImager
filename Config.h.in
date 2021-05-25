@@ -1,0 +1,28 @@
+/**
+ * Copyright © 2020 Timothy Reaves
+ *
+ * For the license, see the root LICENSE file.
+ */
+
+#pragma once
+
+#include <QJsonValue>
+#include <QString>
+
+#define VERSION "${QHYAstroImager_VERSION}"
+
+/* *****************************************************************************************************************
+ */
+//                                          Keys for use in QSettings QUCU
+const QLatin1String MAIN_WINDOW_SIZE("MainWindow/Size");
+const QLatin1String MAIN_WINDOW_POSITION("MainWindow/Position");
+const QLatin1String LAST_OPENED_DIRECTORY("LastOpenedDirectory");
+
+/* *****************************************************************************************************************
+ */
+//                                Numeric Constants (prevents Magic Number
+//                                warnings)
+const int           DefaultWindowHeight    = 600;
+const int           DefaultWindowWidth     = 800;
+const int           DefaultWindowPositionX = 200;
+const int           DefaultWindowPositionY = 200;
