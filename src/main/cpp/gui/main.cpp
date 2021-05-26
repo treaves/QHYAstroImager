@@ -12,6 +12,7 @@ int main(int argc, char * argv[])
    QCoreApplication::setOrganizationDomain("silverfieldstech.com");
    QCoreApplication::setApplicationName("QHYAstroImager");
    QCoreApplication::setApplicationVersion(VERSION);
+//   QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
 
    MainWindow window;
    window.show();

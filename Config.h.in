@@ -11,18 +11,18 @@
 
 #define VERSION "${QHYAstroImager_VERSION}"
 
-/* *****************************************************************************************************************
- */
-//                                          Keys for use in QSettings QUCU
+/* ***************************************************************************************************************** */
+//                                          Keys for use in QSettings
 const QLatin1String MAIN_WINDOW_SIZE("MainWindow/Size");
 const QLatin1String MAIN_WINDOW_POSITION("MainWindow/Position");
-const QLatin1String LAST_OPENED_DIRECTORY("LastOpenedDirectory");
 
-/* *****************************************************************************************************************
- */
-//                                Numeric Constants (prevents Magic Number
-//                                warnings)
+/* ***************************************************************************************************************** */
+//                                Numeric Constants (prevents Magic Number warnings)
 const int           DefaultWindowHeight    = 600;
 const int           DefaultWindowWidth     = 800;
 const int           DefaultWindowPositionX = 200;
 const int           DefaultWindowPositionY = 200;
+
+const int           BufferSizeCameraName   = 64; // for calls to GetQHYCCDId
+
+const int           FiveSeconds            = 5000; // in milliseconds

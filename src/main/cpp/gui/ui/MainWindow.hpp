@@ -7,10 +7,14 @@
  */
 
 #include <QAction>
+#include <QActionGroup>
 #include <QJsonArray>
 #include <QList>
 #include <QMainWindow>
+#include <QMenu>
+#include <QStringList>
 
+class QHYCCD;
 
 namespace Ui
 {
@@ -30,15 +34,21 @@ protected:
    void closeEvent(QCloseEvent * event) override;
 
 private slots:
-   void connectToCamera();
-   void disconnectFromCamera();
+   void cameraSelected(QAction * camera);
    void displayAboutDialog() const;
-   void populateCameraList();
+   void updateCameraList(QStringList cameraNames);
 
 private:
-   void             createMenus();
-   void             readSettings();
-   void             writeSettings();
+   [[nodiscard]] auto cameraExists(const QString & cameraName) const -> bool;
+   void               connectToCamera(QString cameraName);
+   void               createMenus();
+   void               disconnectFromCamera(QString cameraName);
+   void               readSettings();
+   void               writeSettings();
 
-   Ui::MainWindow * ui;
+   Ui::MainWindow *   ui;
+   QActionGroup *     cameras;
+   QMenu *            menuCameras;
+   QHYCCD *           qhyccd;
+   QString            selectedCameraName;
 };

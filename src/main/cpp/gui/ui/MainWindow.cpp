@@ -7,28 +7,31 @@
 #include "MainWindow.hpp"
 #include "ui_MainWindow.h"
 
-#include <QAction>
-#include <qhyccd.h>
-#include <QMessageBox>
-#include <QSettings>
-#include <QDebug>
-#include <qglobal.h>
-
 #include "About.hpp"
 #include "Config.h"
+#include "QHYCCD.hpp"
+#include <QAction>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget * parent)
    : QMainWindow(parent)
    , ui(new Ui::MainWindow)
+   , cameras(new QActionGroup(this))
+   , menuCameras(nullptr)
+   , qhyccd(new QHYCCD(this))
 {
    ui->setupUi(this);
    readSettings();
    createMenus();
+   ui->statusbar->showMessage(tr("No cameras found."));
 
-   quint32 qhyResult = InitQHYCCDResource();
-   if(qhyResult != QHYCCD_SUCCESS) {
-      qCritical() << "InitQHYCCDResource: failed";
+   connect(qhyccd, &QHYCCD::camerasChanged, this, &MainWindow::updateCameraList);
+   connect(cameras, &QActionGroup::triggered, this, &MainWindow::cameraSelected);
+   if (!qhyccd->initialize()) {
+      ui->statusbar->showMessage(tr("Initialization of the QHYCCD driver failed."));
    }
+
+   cameras->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
 }
 
 MainWindow::~MainWindow()
@@ -36,11 +39,9 @@ MainWindow::~MainWindow()
    delete ui;
 }
 
-/* *****************************************************************************************************************
- */
+/* ***************************************************************************************************************** */
 // MARK: - QMaiaWindow over-rides
-/* *****************************************************************************************************************
- */
+/* ***************************************************************************************************************** */
 void MainWindow::closeEvent(QCloseEvent * event)
 {
    QWidget::closeEvent(event);
@@ -48,28 +49,36 @@ void MainWindow::closeEvent(QCloseEvent * event)
    //   event->accept();
 }
 
-/* *****************************************************************************************************************
- */
+/* ***************************************************************************************************************** */
 // MARK: - Private methods
-/* *****************************************************************************************************************
- */
+/* ***************************************************************************************************************** */
+auto MainWindow::cameraExists(const QString & cameraName) const -> bool
+{
+   return std::any_of(cameras->actions().constBegin(), cameras->actions().constEnd(), [cameraName](QAction * action) {
+      return action->text() == cameraName;
+   });
+}
+
+void MainWindow::connectToCamera(QString cameraName)
+{
+   Q_UNUSED(cameraName)
+}
 void MainWindow::createMenus()
 {
    auto * menu   = menuBar()->addMenu(tr("&File"));
-   auto * action = new QAction(tr("&Connect camera")); // NOLINT(cppcoreguidelines-owning-memory)
-   connect(action, &QAction::triggered, this, &MainWindow::connectToCamera);
-   action->setStatusTip(tr("Connect to camera."));
-   menu->addAction(action);
-   action = new QAction(tr("&Scan")); // NOLINT(cppcoreguidelines-owning-memory)
-   connect(action, &QAction::triggered, this, &MainWindow::populateCameraList);
-   action->setStatusTip(tr("Scan for cameras."));
-   menu->addAction(action);
 
-   menu   = menuBar()->addMenu(tr("&Help"));
-   action = new QAction(tr("&About")); // NOLINT(cppcoreguidelines-owning-memory)
+   menuCameras   = menuBar()->addMenu(tr("&Cameras"));
+
+   menu          = menuBar()->addMenu(tr("&Help"));
+   auto * action = new QAction(tr("&About")); // NOLINT(cppcoreguidelines-owning-memory)
    connect(action, &QAction::triggered, this, &MainWindow::displayAboutDialog);
    action->setStatusTip(tr("About."));
    menu->addAction(action);
+}
+
+void MainWindow::disconnectFromCamera(QString cameraName)
+{
+   Q_UNUSED(cameraName)
 }
 
 void MainWindow::writeSettings()
@@ -86,19 +95,25 @@ void MainWindow::readSettings()
    resize(settings.value(MAIN_WINDOW_SIZE, QSize(DefaultWindowWidth, DefaultWindowHeight)).toSize());
    move(settings.value(MAIN_WINDOW_POSITION, QPoint(DefaultWindowPositionX, DefaultWindowPositionY)).toPoint());
 }
-/* *****************************************************************************************************************
- */
+/* ***************************************************************************************************************** */
 // MARK: - Private Slots
-/* *****************************************************************************************************************
- */
-void MainWindow::connectToCamera()
+/* ***************************************************************************************************************** */
+void MainWindow::cameraSelected(QAction * camera)
 {
-   //
-}
-
-void MainWindow::disconnectFromCamera()
-{
-   //
+   // This block is to disconnect a camera when a different camera is selected, as there is only one event.
+   if (!selectedCameraName.isEmpty() && selectedCameraName != camera->text()) {
+      disconnectFromCamera(selectedCameraName);
+      selectedCameraName = "";
+   }
+   if (camera->isChecked()) {
+      ui->statusbar->showMessage(tr("Camera %1 selected.").arg(camera->text()), FiveSeconds);
+      connectToCamera(camera->text());
+      selectedCameraName = camera->text();
+   } else {
+      ui->statusbar->showMessage(tr("Camera %1 deselected.").arg(camera->text()), FiveSeconds);
+      disconnectFromCamera(camera->text());
+      selectedCameraName = "";
+   }
 }
 
 void MainWindow::displayAboutDialog() const
@@ -107,8 +122,23 @@ void MainWindow::displayAboutDialog() const
    aboutDialog.exec();
 }
 
-void MainWindow::populateCameraList()
+void MainWindow::updateCameraList(QStringList cameraNames)
 {
-   quint32 num = ScanQHYCCD();
-   qDebug() << "Cameras found:" << num;
+   qDebug() << "====> updateCameraList() called.";
+   for (const auto & cameraName : cameraNames) {
+      if (!cameraExists(cameraName)) {
+         auto * action = new QAction(cameraName); // NOLINT(cppcoreguidelines-owning-memory)
+         action->setCheckable(true);
+         cameras->addAction(action);
+         menuCameras->addAction(action);
+      }
+   }
+
+   // Check for any camera that has been removed
+   for (auto * camera : cameras->actions()) {
+      if (!cameraNames.contains(camera->text())) {
+         cameras->removeAction(camera);
+         menuCameras->removeAction(camera);
+      }
+   }
 }
