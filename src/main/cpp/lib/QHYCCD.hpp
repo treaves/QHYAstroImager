@@ -19,7 +19,9 @@
 class QHYCCD : public QObject
 {
    Q_OBJECT
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
    Q_DISABLE_COPY_MOVE(QHYCCD)
+#endif
    Q_PROPERTY(QStringList cameras READ cameras NOTIFY camerasChanged)
    Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
 

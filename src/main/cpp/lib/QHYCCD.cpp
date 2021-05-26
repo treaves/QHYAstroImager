@@ -7,24 +7,19 @@
 #include "QHYCCD.hpp"
 
 #include "Config.h"
-#include <qhyccd.h>
 #include <QByteArray>
-#include <QDebug>
+#include <qhyccd.h>
 #include <QString>
-#include <QLatin1String>
 
 /* ***************************************************************************************************************** */
 // MARK: - ctors & dtors
 /* ***************************************************************************************************************** */
 QHYCCD::QHYCCD(QObject * parent)
-  : QObject(parent)
+   : QObject(parent)
 {
 }
 
-QHYCCD::~QHYCCD()
-{
-}
-
+QHYCCD::~QHYCCD() {}
 
 /* ***************************************************************************************************************** */
 // MARK: - Public methods
@@ -45,7 +40,7 @@ auto QHYCCD::isReady() const -> bool
 auto QHYCCD::initialize() -> bool
 {
    quint32 qhyResult = InitQHYCCDResource();
-   if(qhyResult == QHYCCD_SUCCESS) {
+   if (qhyResult == QHYCCD_SUCCESS) {
       populateCameraList();
       m_ready = true;
    } else {
@@ -66,7 +61,7 @@ void QHYCCD::populateCameraList()
    qDebug() << "Cameras found:" << connectedCameraCount;
 
    QByteArray nameBuffer(BufferSizeCameraName, 0);
-   quint32 qhyResult{QHYCCD_ERROR};
+   quint32    qhyResult{ QHYCCD_ERROR };
    for (quint32 cameraIndex = 0; cameraIndex < connectedCameraCount; cameraIndex++) {
       qhyResult = GetQHYCCDId(cameraIndex, nameBuffer.data());
       if (qhyResult == QHYCCD_SUCCESS) {

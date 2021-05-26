@@ -64,12 +64,11 @@ list(
 )
 
 find_package(
-  Qt5 5.8
+  Qt5 5.10
   COMPONENTS Core Test Widgets
   REQUIRED
 )
 
-find_package(USB-1 REQUIRED)
 find_package(CFITSIO REQUIRED)
 find_package(QHYCCD REQUIRED)
 

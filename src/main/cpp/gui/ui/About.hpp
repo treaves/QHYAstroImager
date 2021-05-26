@@ -15,8 +15,10 @@ namespace Ui
 
 class About : public QDialog
 {
-Q_OBJECT
+   Q_OBJECT
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
    Q_DISABLE_COPY_MOVE(About)
+#endif
 
 public:
    explicit About(QWidget * parent = nullptr);
@@ -25,4 +27,3 @@ public:
 private:
    Ui::About * ui;
 };
-

@@ -24,7 +24,9 @@ namespace Ui
 class MainWindow : public QMainWindow
 {
    Q_OBJECT
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
    Q_DISABLE_COPY_MOVE(MainWindow)
+#endif
 
 public:
    explicit MainWindow(QWidget * parent = nullptr);
