@@ -15,6 +15,7 @@
 #include <QStringList>
 
 class QHYCCD;
+class QHYCamera;
 
 namespace Ui
 {
@@ -38,7 +39,7 @@ protected:
 private slots:
    void cameraSelected(QAction * camera);
    void displayAboutDialog() const;
-   void updateCameraList(QStringList cameraNames);
+   void updateCameraList(const QStringList & cameraNames);
 
 private:
    [[nodiscard]] auto cameraExists(const QString & cameraName) const -> bool;
@@ -50,6 +51,7 @@ private:
 
    Ui::MainWindow *   ui;
    QActionGroup *     cameras;
+   QHYCamera *        connectedCamera;
    QMenu *            menuCameras;
    QHYCCD *           qhyccd;
    QString            selectedCameraName;

@@ -24,5 +24,6 @@ const int           DefaultWindowPositionX = 200;
 const int           DefaultWindowPositionY = 200;
 
 const int           BufferSizeCameraName   = 64; // for calls to GetQHYCCDId
+const int           BufferSizeReadModeName = 50; // for calls to GetQHYCCDId
 
 const int           FiveSeconds            = 5000; // in milliseconds

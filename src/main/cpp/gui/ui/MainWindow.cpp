@@ -9,6 +9,7 @@
 
 #include "About.hpp"
 #include "Config.h"
+#include "QHYCamera.hpp"
 #include "QHYCCD.hpp"
 #include <QAction>
 #include <QSettings>
@@ -61,8 +62,12 @@ auto MainWindow::cameraExists(const QString & cameraName) const -> bool
 
 void MainWindow::connectToCamera(QString cameraName)
 {
-   Q_UNUSED(cameraName)
+   connectedCamera = qhyccd->cameraNamed(cameraName);
+   if (!connectedCamera->connect()) {
+      connectedCamera = nullptr;
+   }
 }
+
 void MainWindow::createMenus()
 {
    auto * menu   = menuBar()->addMenu(tr("&File"));
@@ -118,11 +123,11 @@ void MainWindow::cameraSelected(QAction * camera)
 
 void MainWindow::displayAboutDialog() const
 {
-   About aboutDialog;
+   About aboutDialog(this->topLevelWidget());
    aboutDialog.exec();
 }
 
-void MainWindow::updateCameraList(QStringList cameraNames)
+void MainWindow::updateCameraList(const QStringList & cameraNames)
 {
    qDebug() << "====> updateCameraList() called.";
    for (const auto & cameraName : cameraNames) {

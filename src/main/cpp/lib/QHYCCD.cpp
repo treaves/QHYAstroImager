@@ -24,19 +24,18 @@ QHYCCD::~QHYCCD() {}
 /* ***************************************************************************************************************** */
 // MARK: - Public methods
 /* ***************************************************************************************************************** */
-auto QHYCCD::cameras() const -> QStringList
+auto QHYCCD::cameras() const -> const QStringList
 {
    return m_cameras;
 }
 
-auto QHYCCD::isReady() const -> bool
+auto QHYCCD::cameraNamed(QString name) -> QHYCamera *
 {
-   return m_ready;
+   auto * camera = new QHYCamera(QByteArray(name.toStdString().c_str()));
+
+   return camera;
 }
 
-/* ***************************************************************************************************************** */
-// MARK: - Public slots
-/* ***************************************************************************************************************** */
 auto QHYCCD::initialize() -> bool
 {
    quint32 qhyResult = InitQHYCCDResource();
@@ -48,6 +47,11 @@ auto QHYCCD::initialize() -> bool
       m_ready = false;
    }
    emit readyChanged(m_ready);
+   return m_ready;
+}
+
+auto QHYCCD::isReady() const -> bool
+{
    return m_ready;
 }
 

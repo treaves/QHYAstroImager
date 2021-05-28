@@ -6,6 +6,8 @@
  * For the license, see the root LICENSE file.
  */
 
+#include "QHYCamera.hpp"
+#include <QByteArray>
 #include <QObject>
 #include <QStringList>
 
@@ -14,7 +16,7 @@
  * This class is intended to be the sole interface to the QHYCCD driver.  Users of this class should not need to include
  * any header from the library, nor link to either the QHYCCD library or the USB library.
  *
- * Instantiation of this class does not make it useable; before an instance does anything, initialize() must be called.
+ * Instantiation of this class does not make it usable; before an instance does anything, initialize() must be called.
  */
 class QHYCCD : public QObject
 {
@@ -33,7 +35,9 @@ public:
     * Accessor for the list of connected cameras.
     * @return The list of camera names attached.
     */
-   [[nodiscard]] auto cameras() const -> QStringList;
+   [[nodiscard]] auto cameras() const -> const QStringList;
+
+   [[nodiscard]] auto cameraNamed(QString name) -> QHYCamera *;
 
    /*!
     * Initializes the QHYCCD driver, and returns success.
@@ -49,7 +53,7 @@ public:
    [[nodiscard]] auto isReady() const -> bool;
 
 signals:
-   void camerasChanged(QStringList cameras);
+   void camerasChanged(const QStringList cameras);
    void readyChanged(bool ready);
 
 private:

@@ -2,11 +2,11 @@
 
 # ######################################################################################################################
 # ##########                                      Library Source Files                                        ##########
-set(SOURCES QHYCCD.cpp)
+set(SOURCES QHYCCD.cpp QHYCamera.cpp)
 
-set(HEADERS QHYCCD.hpp)
+set(HEADERS QHYCCD.hpp QHYCamera.hpp)
 
-set(PRIVATE_SOURCE)
+set(PRIVATE_SOURCE )
 
 add_library(qhyccd STATIC ${SOURCES} ${HEADERS} ${PRIVATE_SOURCE})
 
