@@ -14,16 +14,8 @@ QHYCamera::QHYCamera(QByteArray name, QObject * parent)
    , handle(nullptr)
    , id("")
    , model(name.left(name.lastIndexOf('-')))
-   , name(name)
-   , readModeCount(0)
+   , m_name(name)
 {
-   //   quint32 qhyResult{QHYCCD_ERROR};
-
-   if (handle == nullptr) {
-      qWarning() << tr("Unable to open camera named:%1").arg(QLatin1String(name));
-   } else {
-      initializeReadModeCount();
-   }
 }
 
 QHYCamera::~QHYCamera() noexcept
@@ -38,7 +30,10 @@ QHYCamera::~QHYCamera() noexcept
 /* ***************************************************************************************************************** */
 auto QHYCamera::connect() -> bool
 {
-   handle = OpenQHYCCD(name.data());
+   handle = OpenQHYCCD(m_name.data());
+   if (handle != nullptr) {
+      initializeReadModes();
+   }
    emit connectedChanged(handle == nullptr);
    return handle == nullptr;
 }
@@ -51,7 +46,7 @@ auto QHYCamera::disconnect() -> void
          handle = nullptr;
          emit connectedChanged(false);
       } else {
-         qWarning() << tr("There was an error disconnectiong from %1.").arg(QLatin1String(name));
+         qWarning() << tr("There was an error disconnectiong from %1.").arg(QLatin1String(m_name));
       }
    }
 }
@@ -59,6 +54,11 @@ auto QHYCamera::disconnect() -> void
 auto QHYCamera::isConnected() -> bool
 {
    return handle == nullptr;
+}
+
+auto QHYCamera::name() const -> QString
+{
+   return QString(m_name);
 }
 
 auto QHYCamera::readMode() const -> QString
@@ -85,9 +85,10 @@ void QHYCamera::setReadMode(QString readMode)
 /* ***************************************************************************************************************** */
 // MARK: - Private methods
 /* ***************************************************************************************************************** */
-void QHYCamera::initializeReadModeCount()
+void QHYCamera::initializeReadModes()
 {
    if (handle != nullptr) {
+      quint32 readModeCount;
       if (GetQHYCCDNumberOfReadModes(handle, &readModeCount) != QHYCCD_SUCCESS) {
          disconnect();
       } else {
@@ -103,7 +104,6 @@ void QHYCamera::initializeReadModeCount()
             }
             readModeIndex++;
          }
-         emit readModesChanged(m_readModes);
       }
    }
 }

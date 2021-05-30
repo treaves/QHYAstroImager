@@ -32,7 +32,6 @@ auto QHYCCD::cameras() const -> const QStringList
 auto QHYCCD::cameraNamed(QString name) -> QHYCamera *
 {
    auto * camera = new QHYCamera(QByteArray(name.toStdString().c_str()));
-
    return camera;
 }
 

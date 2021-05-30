@@ -24,8 +24,9 @@ class QHYCamera : public QObject
    Q_DISABLE_COPY_MOVE(QHYCamera)
 #endif
    Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
+   Q_PROPERTY(QString name READ name)
    Q_PROPERTY(QString readMode READ readMode WRITE setReadMode NOTIFY readModeChanged)
-   Q_PROPERTY(QStringList readModes READ readModes NOTIFY readModesChanged)
+   Q_PROPERTY(QStringList readModes READ readModes)
 
 public:
    explicit QHYCamera(QByteArray name, QObject * parent = nullptr);
@@ -39,7 +40,7 @@ public:
    [[nodiscard]] auto connect() -> bool;
    auto               disconnect() -> void;
    [[nodiscard]] auto isConnected() -> bool;
-
+   [[nodiscard]] auto name() const -> QString;
    [[nodiscard]] auto readMode() const -> QString;
    [[nodiscard]] auto readModes() const -> QStringList;
 
@@ -49,16 +50,14 @@ public slots:
 signals:
    void connectedChanged(bool connected);
    void readModeChanged(QString readMode);
-   void readModesChanged(QStringList readModes);
 
 private:
-   void            initializeReadModeCount();
+   void            initializeReadModes();
 
    qhyccd_handle * handle;
    QString         id;
    QLatin1String   model;
-   QByteArray      name;
-   quint32         readModeCount;
+   QByteArray      m_name;
    QString         m_readMode;
    QStringList     m_readModes;
 };

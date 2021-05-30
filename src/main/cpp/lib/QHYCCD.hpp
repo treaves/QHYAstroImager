@@ -37,6 +37,12 @@ public:
     */
    [[nodiscard]] auto cameras() const -> const QStringList;
 
+   /*!
+    * Creates a representatioon of a given QHYCCD camera.
+    *
+    * @param name of the camera of interest.
+    * @return The camera of interest, or nullptr if it could not be found.
+    */
    [[nodiscard]] auto cameraNamed(QString name) -> QHYCamera *;
 
    /*!

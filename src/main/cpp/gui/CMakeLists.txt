@@ -5,11 +5,11 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/ui)
 
 # ######################################################################################################################
 # ##########                                          Source Files                                            ##########
-set(UIS ui/About.ui ui/MainWindow.ui)
+set(UIS ui/About.ui ui/CameraWidget.ui ui/MainWindow.ui)
 
-set(SOURCES main.cpp ui/About.cpp ui/MainWindow.cpp)
+set(SOURCES main.cpp ui/About.cpp ui/CameraWidget.cpp ui/MainWindow.cpp)
 
-set(HEADERS ui/About.hpp ui/MainWindow.hpp)
+set(HEADERS ui/About.hpp ui/CameraWidget.hpp ui/MainWindow.hpp)
 
 # ######################################################################################################################
 # ##########                                       Executable Creation                                        ##########

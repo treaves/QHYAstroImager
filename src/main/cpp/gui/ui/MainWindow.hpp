@@ -16,6 +16,7 @@
 
 class QHYCCD;
 class QHYCamera;
+class CameraWidget;
 
 namespace Ui
 {
@@ -37,22 +38,16 @@ protected:
    void closeEvent(QCloseEvent * event) override;
 
 private slots:
-   void cameraSelected(QAction * camera);
    void displayAboutDialog() const;
+   void displayStatusMessage(QString message) const;
    void updateCameraList(const QStringList & cameraNames);
 
 private:
-   [[nodiscard]] auto cameraExists(const QString & cameraName) const -> bool;
-   void               connectToCamera(QString cameraName);
-   void               createMenus();
-   void               disconnectFromCamera(QString cameraName);
-   void               readSettings();
-   void               writeSettings();
+   [[nodiscard]] auto    cameraTabExists(const QString & cameraName) const -> bool;
+   void                  createMenus();
+   void                  readSettings();
+   void                  writeSettings();
 
-   Ui::MainWindow *   ui;
-   QActionGroup *     cameras;
-   QHYCamera *        connectedCamera;
-   QMenu *            menuCameras;
-   QHYCCD *           qhyccd;
-   QString            selectedCameraName;
+   Ui::MainWindow *      ui;
+   QHYCCD *              qhyccd;
 };
