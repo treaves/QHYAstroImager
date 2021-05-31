@@ -38,7 +38,7 @@ public:
     * \return The success of connecting to the QHYCCD camera.
     */
    [[nodiscard]] auto connect() -> bool;
-   auto               disconnect() -> void;
+   auto               disconnect() -> bool;
    [[nodiscard]] auto isConnected() -> bool;
    [[nodiscard]] auto name() const -> QString;
    [[nodiscard]] auto readMode() const -> QString;
@@ -53,6 +53,7 @@ signals:
 
 private:
    void            initializeReadModes();
+   void        readCameraDetails(QByteArray & nameBuffer);
 
    qhyccd_handle * handle;
    QString         id;

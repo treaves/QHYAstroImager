@@ -64,7 +64,6 @@ signals:
 
 private:
    void        populateCameraList();
-   void        readCameraDetails(QByteArray & nameBuffer);
 
    QStringList m_cameras;
    bool        m_ready;

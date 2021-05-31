@@ -77,13 +77,3 @@ void QHYCCD::populateCameraList()
    }
    emit camerasChanged(m_cameras);
 }
-
-void QHYCCD::readCameraDetails(QByteArray & nameBuffer)
-{
-   auto * camera = OpenQHYCCD(nameBuffer.data());
-   if (camera != nullptr) {
-
-   } else {
-      qWarning() << "Could not open camera:" << nameBuffer;
-   }
-}

@@ -1,4 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>images/ButtonOff.svg</file>
+        <file>images/ButtonOn.svg</file>
     </qresource>
 </RCC>

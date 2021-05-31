@@ -105,7 +105,8 @@ void MainWindow::updateCameraList(const QStringList & cameraNames)
       if (!cameraTabExists(cameraName)) {
          QHYCamera * camera = qhyccd->cameraNamed(cameraName);
          if (camera != nullptr) {
-            auto * cameraTab = new CameraWidget(camera, this);
+            auto * cameraTab = new CameraWidget(camera);
+            connect(cameraTab, &CameraWidget::newStatusMessage, this, &MainWindow::displayStatusMessage);
             ui->tabWidget->addTab(cameraTab, cameraName);
          } else {
             qWarning() << tr("The camera named %1 could not be found.").arg(cameraName);
@@ -119,9 +120,12 @@ void MainWindow::updateCameraList(const QStringList & cameraNames)
       if (!cameraNames.contains(ui->tabWidget->tabText(tabIndex))) {
          auto * cameraWidget = ui->tabWidget->widget(tabIndex);
          ui->tabWidget->removeTab(tabIndex);
-         if (cameraWidget != nullptr) {
-            delete cameraWidget;
-         }
+         delete cameraWidget;
       }
+   }
+   if (cameraNames.count() == 0) {
+      ui->statusbar->showMessage(tr("No cameras found."));
+   } else {
+      ui->statusbar->showMessage(tr("%1 cameras found.").arg(cameraNames.count()));
    }
 }

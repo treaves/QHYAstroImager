@@ -30,9 +30,12 @@ signals:
    void newStatusMessage(QString message) const;
 
 private slots:
-   void selectReadMode(QString readMode);
+   void cameraConnectionStatusChanged(bool isConnected) const;
+   void connectToCamera(bool connect) const;
+   void selectReadMode(QString readMode) const;
 
 private:
+
    Ui::CameraWidget * ui;
    QHYCamera *        camera;
 };

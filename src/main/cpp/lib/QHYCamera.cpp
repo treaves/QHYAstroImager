@@ -34,26 +34,27 @@ auto QHYCamera::connect() -> bool
    if (handle != nullptr) {
       initializeReadModes();
    }
-   emit connectedChanged(handle == nullptr);
-   return handle == nullptr;
+   emit connectedChanged(isConnected());
+   return isConnected();
 }
 
-auto QHYCamera::disconnect() -> void
+auto QHYCamera::disconnect() -> bool
 {
    if (handle != nullptr) {
       quint32 qhyResult = CloseQHYCCD(handle);
       if (qhyResult == QHYCCD_SUCCESS) {
          handle = nullptr;
-         emit connectedChanged(false);
       } else {
-         qWarning() << tr("There was an error disconnectiong from %1.").arg(QLatin1String(m_name));
+         qWarning() << tr("There was an error disconnecting from %1.").arg(QLatin1String(m_name));
       }
    }
+   emit connectedChanged(isConnected());
+   return !isConnected();
 }
 
 auto QHYCamera::isConnected() -> bool
 {
-   return handle == nullptr;
+   return handle != nullptr;
 }
 
 auto QHYCamera::name() const -> QString
@@ -88,22 +89,33 @@ void QHYCamera::setReadMode(QString readMode)
 void QHYCamera::initializeReadModes()
 {
    if (handle != nullptr) {
-      quint32 readModeCount;
+      quint32 readModeCount = 0;
       if (GetQHYCCDNumberOfReadModes(handle, &readModeCount) != QHYCCD_SUCCESS) {
          disconnect();
       } else {
+         qDebug() << "Found " << readModeCount << " read modes.";
          quint32 readModeIndex = 0;
-         while (readModeIndex <= readModeCount && handle != nullptr) {
-            auto * readModeNameBuffer = // NOLINT(cppcoreguidelines-owning-memory)
-              new QByteArray(BufferSizeReadModeName, 0);
-            if (GetQHYCCDReadModeName(handle, readModeIndex, readModeNameBuffer->data()) == QHYCCD_SUCCESS) {
-               m_readModes.append(QLatin1String(readModeNameBuffer->data()));
-               qDebug() << "Found " << QLatin1String(readModeNameBuffer->data()) << " read mode.";
+         while (readModeIndex < readModeCount && handle != nullptr) {
+            QByteArray readModeNameBuffer(BufferSizeReadModeName, 0);
+            auto status = GetQHYCCDReadModeName(handle, readModeIndex, readModeNameBuffer.data());
+            if ( status == QHYCCD_SUCCESS) {
+               m_readModes.append(QString(readModeNameBuffer));
+               qDebug() << "Found " << QString(readModeNameBuffer) << " read mode.";
             } else {
+               qWarning() << tr("GetQHYCCDReadModeName failed with code %1.").arg(status);
                disconnect();
             }
             readModeIndex++;
          }
       }
+   }
+}
+
+void QHYCamera::readCameraDetails(QByteArray & nameBuffer)
+{
+   if (handle != nullptr) {
+
+   } else {
+      qWarning() << "Could not open camera:" << nameBuffer;
    }
 }
