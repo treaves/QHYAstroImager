@@ -2,6 +2,9 @@
 An application for imaging with QHYCCD cameras.
 
 #Building
+
+CI build status: (Ubuntu & Mac OS) 
+
 ![example workflow](https://github.com/treaves/QHYAstroImager/actions/workflows/cmake.yml/badge.svg)
 ## General Requirements
 Install the following with your platforms package manager.  The QHYCCD driver may need to be installed manually.
@@ -9,6 +12,7 @@ Install the following with your platforms package manager.  The QHYCCD driver ma
 - Qt >= 5.10
 - QHYCCD SDK
 - cfitsio
+- libusb-1.0 : this is not needed directly, but, QHYCCD SDK dynamically links against it.
 
 Once you've cloned the repository, from the root, run the following commands:
 ```sh
