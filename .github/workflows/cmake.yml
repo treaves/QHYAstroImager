@@ -42,12 +42,12 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          brew install qt@5 cfitsio libusb
+          brew install qt@5 cfitsio
           wget https://www.qhyccd.com/file/repository/publish/SDK/210313/sdk_macMix_21.03.13.tgz
           tar xzf sdk_macMix_21.03.13.tgz
           cd sdk_macMix_21.03.13
           chmod +x install.sh
-          ./install.sh
+          sudo ./install.sh
           cd ..
           rm -fr dk_macMix_21.03.13*
           export PATH="/usr/local/opt/qt@5/bin:$PATH"

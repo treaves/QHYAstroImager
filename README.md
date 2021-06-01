@@ -2,6 +2,7 @@
 An application for imaging with QHYCCD cameras.
 
 #Building
+![example workflow](https://github.com/treaves/QHYAstroImager/actions/workflows/cmake.yml/badge.svg)
 ## General Requirements
 Install the following with your platforms package manager.  The QHYCCD driver may need to be installed manually.
 - CMake >=3.15
