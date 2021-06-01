@@ -71,6 +71,7 @@ find_package(
 
 find_package(CFITSIO REQUIRED)
 find_package(QHYCCD REQUIRED)
+find_package(USB-1 REQUIRED)
 
 # ######################################################################################################################
 # ##########                                           Qt UI & moc                                            ##########
