@@ -12,6 +12,7 @@ env:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     container:
       image: treaves/qhy_dev:1.0.0
 
