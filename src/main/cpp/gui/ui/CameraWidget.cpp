@@ -16,9 +16,10 @@ CameraWidget::CameraWidget(QHYCamera * camera, QWidget * parent)
    , camera(camera)
 {
    ui->setupUi(this);
-   connect(ui->comboBoxReadModes, &QComboBox::currentTextChanged, this, &CameraWidget::selectReadMode);
+   connect(ui->comboBoxReadModes, &QComboBox::currentTextChanged, camera, &QHYCamera::setReadMode);
    connect(ui->pushButtonConnection, &QPushButton::toggled, this, &CameraWidget::connectToCamera);
    connect(camera, &QHYCamera::connectedChanged, this, &CameraWidget::cameraConnectionStatusChanged);
+   connect(camera, &QHYCamera::readModeChanged, this, &CameraWidget::readModeChanged);
 }
 
 CameraWidget::~CameraWidget()
@@ -56,13 +57,19 @@ void CameraWidget::connectToCamera(bool connect) const
      }
   } else if(!connect && camera->isConnected()) {
      if(!camera->disconnect()) {
-        emit newStatusMessage(tr("Disconnect from %1 failed. ").arg(camera->name()));
+        emit newStatusMessage(tr("Disconnect from %1 failed.").arg(camera->name()));
         ui->pushButtonConnection->setChecked(true);
      }
   }
 }
 
-void CameraWidget::selectReadMode(QString readMode) const
+void CameraWidget::readModeChanged(QString newMode)
 {
-   qDebug() << "Selected read mode:" << readMode;
+   if (newMode == ui->comboBoxReadModes->currentText()) {
+      emit newStatusMessage(tr("Read mode set to %1.").arg(newMode));
+   } else {
+      emit newStatusMessage(tr("Setting read mode to %1 failed.").arg(newMode));
+      ui->comboBoxReadModes->setCurrentIndex(-1);
+
+   }
 }

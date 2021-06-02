@@ -18,12 +18,15 @@ const QLatin1String MAIN_WINDOW_POSITION("MainWindow/Position");
 
 /* ***************************************************************************************************************** */
 //                                Numeric Constants (prevents Magic Number warnings)
-const int           DefaultWindowHeight    = 600;
-const int           DefaultWindowWidth     = 800;
-const int           DefaultWindowPositionX = 200;
-const int           DefaultWindowPositionY = 200;
+const int           DefaultWindowHeight       = 600;
+const int           DefaultWindowWidth        = 800;
+const int           DefaultWindowPositionX    = 200;
+const int           DefaultWindowPositionY    = 200;
 
-const int           BufferSizeCameraName   = 64; // for calls to GetQHYCCDId
-const int           BufferSizeReadModeName = 50; // for calls to GetQHYCCDId
+const int           BufferSizeCameraName      = 64; // for calls to GetQHYCCDId
+const int           BufferSizeReadModeName    = 50; // for calls to GetQHYCCDId
+const int           BufferSizeFirmwareVersion = 32;
 
-const int           FiveSeconds            = 5000; // in milliseconds
+const int           FiveSeconds               = 5000; // in milliseconds
+
+const int           Align32Bit                = 32;

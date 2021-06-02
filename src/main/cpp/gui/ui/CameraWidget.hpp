@@ -32,7 +32,7 @@ signals:
 private slots:
    void cameraConnectionStatusChanged(bool isConnected) const;
    void connectToCamera(bool connect) const;
-   void selectReadMode(QString readMode) const;
+   void readModeChanged(QString newMode);
 
 private:
 
