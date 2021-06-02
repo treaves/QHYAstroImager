@@ -8,6 +8,7 @@
 
 #include "Config.h"
 #include <QByteArray>
+#include <QDebug>
 #include <qhyccd.h>
 #include <QString>
 

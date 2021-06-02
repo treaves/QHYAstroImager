@@ -7,7 +7,6 @@
 #include "CameraWidget.hpp"
 #include "ui_CameraWidget.h"
 
-#include "QHYCamera.hpp"
 #include <QDebug>
 
 CameraWidget::CameraWidget(QHYCamera * camera, QWidget * parent)
@@ -16,10 +15,14 @@ CameraWidget::CameraWidget(QHYCamera * camera, QWidget * parent)
    , camera(camera)
 {
    ui->setupUi(this);
-   connect(ui->comboBoxReadModes, &QComboBox::currentTextChanged, camera, &QHYCamera::setReadMode);
+   connect(ui->comboBoxReadMode, &QComboBox::currentTextChanged, camera, [=]() {
+      camera->setReadAndTransferModes(this->ui->comboBoxReadMode->currentText());
+   });
+   connect(ui->comboBoxTransferMode, &QComboBox::currentTextChanged, this, &CameraWidget::transferModeSelected);
    connect(ui->pushButtonConnection, &QPushButton::toggled, this, &CameraWidget::connectToCamera);
    connect(camera, &QHYCamera::connectedChanged, this, &CameraWidget::cameraConnectionStatusChanged);
    connect(camera, &QHYCamera::readModeChanged, this, &CameraWidget::readModeChanged);
+   connect(camera, &QHYCamera::transferModeChanged, this, &CameraWidget::transferModeChanged);
 }
 
 CameraWidget::~CameraWidget()
@@ -39,37 +42,48 @@ void CameraWidget::cameraConnectionStatusChanged(bool isConnected) const
    if (isConnected) {
       emit newStatusMessage(tr("Connected to %1.").arg(camera->name()));
       ui->pushButtonConnection->setText(tr("Connected"));
-      ui->comboBoxReadModes->clear();
-      ui->comboBoxReadModes->addItems(camera->readModes());
+      ui->comboBoxReadMode->clear();
+      ui->comboBoxReadMode->addItems(camera->readModes());
    } else {
       emit newStatusMessage(tr("Disconnected from %1.").arg(camera->name()));
-      ui->comboBoxReadModes->clear();
+      ui->comboBoxReadMode->clear();
       ui->pushButtonConnection->setText(tr("Disconnected"));
    }
 }
 
 void CameraWidget::connectToCamera(bool connect) const
 {
-  if (connect && !camera->isConnected()) {
-     if(!camera->connect()) {
-        emit newStatusMessage(tr("Could not connect to %1.").arg(camera->name()));
-        ui->pushButtonConnection->setChecked(false);
-     }
-  } else if(!connect && camera->isConnected()) {
-     if(!camera->disconnect()) {
-        emit newStatusMessage(tr("Disconnect from %1 failed.").arg(camera->name()));
-        ui->pushButtonConnection->setChecked(true);
-     }
-  }
+   if (connect && !camera->isConnected()) {
+      camera->connect();
+   } else if (!connect && camera->isConnected()) {
+      camera->disconnect();
+   }
 }
 
-void CameraWidget::readModeChanged(QString newMode)
+void CameraWidget::readModeChanged(QString newMode) const
 {
-   if (newMode == ui->comboBoxReadModes->currentText()) {
+   if (newMode == ui->comboBoxReadMode->currentText()) {
       emit newStatusMessage(tr("Read mode set to %1.").arg(newMode));
    } else {
       emit newStatusMessage(tr("Setting read mode to %1 failed.").arg(newMode));
-      ui->comboBoxReadModes->setCurrentIndex(-1);
-
+      ui->comboBoxReadMode->setCurrentIndex(-1);
    }
+}
+
+void CameraWidget::transferModeChanged(QHYCamera::DataTransferMode newMode) const
+{
+   QString newModeName = newMode == QHYCamera::SingleImage ? tr("Single Image") : tr("Live View");
+   if (newMode == ui->comboBoxTransferMode->currentData()) {
+      emit newStatusMessage(tr("Transfer mode set to %1.").arg(newModeName));
+   } else {
+      emit newStatusMessage(tr("Setting transfer mode to %1 failed.").arg(newModeName));
+      ui->comboBoxTransferMode->setCurrentIndex(-1);
+   }
+}
+
+void CameraWidget::transferModeSelected(QString modeName) const
+{
+   Q_UNUSED(modeName)
+   camera->setReadAndTransferModes(ui->comboBoxReadMode->currentText(),
+                                   ui->comboBoxTransferMode->currentData().value<QHYCamera::DataTransferMode>());
 }

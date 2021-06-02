@@ -8,7 +8,7 @@
 
 #include <QWidget>
 
-class QHYCamera;
+#include "QHYCamera.hpp"
 
 namespace Ui
 {
@@ -32,7 +32,9 @@ signals:
 private slots:
    void cameraConnectionStatusChanged(bool isConnected) const;
    void connectToCamera(bool connect) const;
-   void readModeChanged(QString newMode);
+   void readModeChanged(QString newMode) const;
+   void transferModeChanged(QHYCamera::DataTransferMode newMode) const;
+   void transferModeSelected(QString modeName) const;
 
 private:
 

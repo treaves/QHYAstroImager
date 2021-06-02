@@ -26,9 +26,9 @@ class QHYCamera : public QObject
    Q_DISABLE_COPY_MOVE(QHYCamera)
 #endif
    Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
-   Q_PROPERTY(DataTransferMode transferMode READ transferMode WRITE setTransferMode NOTIFY transferModeChanged)
+   Q_PROPERTY(DataTransferMode transferMode READ transferMode NOTIFY transferModeChanged)
    Q_PROPERTY(QString name READ name)
-   Q_PROPERTY(QString readMode READ readMode WRITE setReadMode NOTIFY readModeChanged)
+   Q_PROPERTY(QString readMode READ readMode NOTIFY readModeChanged)
    Q_PROPERTY(QStringList readModes READ readModes)
 
 public:
@@ -54,7 +54,7 @@ public:
       bool fourByFour{ false };
       int  binXMaximum{ 1 };
       int  binYMaximum{ 1 };
-   };
+   } __attribute__((aligned(16)));
 
    explicit QHYCamera(QByteArray name, QObject * parent = nullptr);
    ~QHYCamera() noexcept override;
@@ -64,8 +64,8 @@ public:
     *
     * \return The success of connecting to the QHYCCD camera.
     */
-   [[nodiscard]] auto connect() -> bool;
-   auto               disconnect() -> bool;
+   void               connect();
+   void               disconnect();
    [[nodiscard]] auto isConnected() -> bool;
    [[nodiscard]] auto name() const -> QString;
    [[nodiscard]] auto readMode() const -> QString;
@@ -73,8 +73,7 @@ public:
    [[nodiscard]] auto transferMode() const -> DataTransferMode;
 
 public slots:
-   void setReadMode(QString readMode);
-   void setTransferMode(QHYCamera::DataTransferMode mode);
+   void setReadAndTransferModes(QString readMode, QHYCamera::DataTransferMode mode = SingleImage);
 
 signals:
    void connectedChanged(bool connected);
@@ -117,8 +116,10 @@ private:
    double                 gain;
    bool                   supportsBinning;
    Binning                binningInfo;
-   bool supportsHighSpeed;
-   bool supportsUSBTraffic;
-   Range usbTraffic;
-   bool supportsGPS;
+   bool                   supportsHighSpeed;
+   bool                   supportsUSBTraffic;
+   Range                  usbTraffic;
+   bool                   supportsGPS;
 };
+
+Q_DECLARE_METATYPE(QHYCamera::DataTransferMode)

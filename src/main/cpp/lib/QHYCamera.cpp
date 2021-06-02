@@ -28,17 +28,16 @@ QHYCamera::~QHYCamera() noexcept
 /* ***************************************************************************************************************** */
 // MARK: - Public methods
 /* ***************************************************************************************************************** */
-auto QHYCamera::connect() -> bool
+void QHYCamera::connect()
 {
    handle = OpenQHYCCD(m_name.data());
    if (handle != nullptr) {
       initializeReadModes();
    }
    emit connectedChanged(isConnected());
-   return isConnected();
 }
 
-auto QHYCamera::disconnect() -> bool
+void QHYCamera::disconnect()
 {
    if (handle != nullptr) {
       quint32 qhyResult = CloseQHYCCD(handle);
@@ -49,7 +48,6 @@ auto QHYCamera::disconnect() -> bool
       }
    }
    emit connectedChanged(isConnected());
-   return !isConnected();
 }
 
 auto QHYCamera::isConnected() -> bool
@@ -80,44 +78,43 @@ auto QHYCamera::transferMode() const -> DataTransferMode
 /* ***************************************************************************************************************** */
 // MARK: - Public slots
 /* ***************************************************************************************************************** */
-void QHYCamera::setReadMode(QString readMode)
+void QHYCamera::setReadAndTransferModes(QString readMode, QHYCamera::DataTransferMode mode)
 {
-   QTimer::singleShot(0, this, [this, readMode]() {
+   QTimer::singleShot(0, this, [this, readMode, mode]() {
       if (isConnected() && !readMode.isEmpty() && m_readMode != readMode) {
-         auto result = SetQHYCCDReadMode(handle, m_readModes.value(readMode));
-         if (result == QHYCCD_SUCCESS) {
-            m_readMode = readMode;
-            emit readModeChanged(readMode);
-            setTransferMode(DataTransferMode::SingleImage);
-         } else {
-            emit readModeChanged("");
-            qWarning() << tr("Could not set camera read mode to %1 with index %2")
-                            .arg(readMode)
-                            .arg(m_readModes.value(readMode));
+         // if m_readMode has been set, we must disconnect & reconnect the camera.
+         if (!m_readMode.isEmpty()) {
+            disconnect();
+            connect();
+         }
+         if (isConnected()) {
+            if (SetQHYCCDReadMode(handle, m_readModes.value(readMode)) == QHYCCD_SUCCESS) {
+               m_readMode = readMode;
+               emit readModeChanged(readMode);
+               if (SetQHYCCDStreamMode(handle, mode) == QHYCCD_SUCCESS) {
+                  if (InitQHYCCD(handle) == QHYCCD_SUCCESS) {
+                     m_transferMode = mode;
+                     emit transferModeChanged(mode);
+                     readCameraDetails();
+                  } else {
+                     qWarning() << tr("Could not initialize camera %1").arg(QLatin1String(m_name));
+                     disconnect();
+                  }
+               } else {
+                  qWarning()
+                    << tr("Could not set stream mode of camera %1 to %2.").arg(QLatin1String(m_name)).arg(mode);
+                  disconnect();
+               }
+            } else {
+               qWarning() << tr("Could not set camera %1 read mode to %2 with index %3")
+                               .arg(QLatin1String(m_name))
+                               .arg(readMode)
+                               .arg(m_readModes.value(readMode));
+               disconnect();
+            }
          }
       }
    });
-}
-
-void QHYCamera::setTransferMode(DataTransferMode mode)
-{
-   // this may need to happen regardless of the current mode, as it may need to be set anytime the read mode changes.
-   if (isConnected()) {
-      auto qhyResult = SetQHYCCDStreamMode(handle, mode);
-      if (qhyResult == QHYCCD_SUCCESS) {
-         qhyResult = InitQHYCCD(handle);
-         if (qhyResult == QHYCCD_SUCCESS) {
-            m_transferMode = mode;
-            emit transferModeChanged(mode);
-            // TODO
-            readCameraDetails();
-         } else {
-            qWarning() << tr("Could not initialize camera %1").arg(QLatin1String(m_name));
-         }
-      } else {
-         qWarning() << tr("Could not set stream mode of camera %1 to %2.").arg(QLatin1String(m_name)).arg(mode);
-      }
-   }
 }
 
 /* ***************************************************************************************************************** */
@@ -125,7 +122,8 @@ void QHYCamera::setTransferMode(DataTransferMode mode)
 /* ***************************************************************************************************************** */
 void QHYCamera::initializeReadModes()
 {
-   if (handle != nullptr) {
+   // read modes shouldn't change so once read, do not re-read.
+   if (isConnected() && m_readModes.isEmpty()) {
       quint32 readModeCount = 0;
       if (GetQHYCCDNumberOfReadModes(handle, &readModeCount) != QHYCCD_SUCCESS) {
          disconnect();
@@ -231,10 +229,11 @@ void QHYCamera::readControlValues()
       supportsBinning         = true;
    }
 
-   supportsHighSpeed = IsQHYCCDControlAvailable(handle, CONTROL_SPEED) == QHYCCD_SUCCESS;
+   supportsHighSpeed  = IsQHYCCDControlAvailable(handle, CONTROL_SPEED) == QHYCCD_SUCCESS;
    supportsUSBTraffic = IsQHYCCDControlAvailable(handle, CONTROL_USBTRAFFIC) == QHYCCD_SUCCESS;
    if (supportsUSBTraffic) {
-      qhyResult = GetQHYCCDParamMinMaxStep(handle, CONTROL_USBTRAFFIC, &usbTraffic.min, &usbTraffic.max, &usbTraffic.step);
+      qhyResult =
+        GetQHYCCDParamMinMaxStep(handle, CONTROL_USBTRAFFIC, &usbTraffic.min, &usbTraffic.max, &usbTraffic.step);
       if (qhyResult == QHYCCD_ERROR) {
          usbTraffic.max  = 0.0;
          usbTraffic.min  = 0.0;
