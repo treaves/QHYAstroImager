@@ -241,6 +241,8 @@ void QHYCamera::readControlValues()
          usbTraffic.step = 0.0;
       }
    }
+
+   supportsGPS = IsQHYCCDControlAvailable(handle, CAM_GPS) == QHYCCD_SUCCESS;
 }
 
 void QHYCamera::readFirmwareVersion()
