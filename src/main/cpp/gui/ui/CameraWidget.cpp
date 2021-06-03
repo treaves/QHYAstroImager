@@ -7,12 +7,17 @@
 #include "CameraWidget.hpp"
 #include "ui_CameraWidget.h"
 
+#include <QAction>
 #include <QDebug>
+#include <QMenu>
+
+#include "CameraInfoDialog.hpp"
 
 CameraWidget::CameraWidget(QHYCamera * camera, QWidget * parent)
    : QWidget(parent)
    , ui(new Ui::CameraWidget)
    , camera(camera)
+   , cameraMenu(new QMenu())
 {
    ui->setupUi(this);
    connect(ui->comboBoxReadMode, &QComboBox::currentTextChanged, camera, [=]() {
@@ -23,6 +28,13 @@ CameraWidget::CameraWidget(QHYCamera * camera, QWidget * parent)
    connect(camera, &QHYCamera::connectedChanged, this, &CameraWidget::cameraConnectionStatusChanged);
    connect(camera, &QHYCamera::readModeChanged, this, &CameraWidget::readModeChanged);
    connect(camera, &QHYCamera::transferModeChanged, this, &CameraWidget::transferModeChanged);
+
+   this->setContextMenuPolicy(Qt::CustomContextMenu);
+   connect(this, &CameraWidget::customContextMenuRequested, this, &CameraWidget::showContextMenu);
+   auto * action = new QAction(tr("&Capabilities")); // NOLINT(cppcoreguidelines-owning-memory)
+   connect(action, &QAction::triggered, this, &CameraWidget::showCameraInfoDialog);
+   action->setStatusTip(tr("This cameras capabilities."));
+   cameraMenu->addAction(action);
 }
 
 CameraWidget::~CameraWidget()
@@ -40,12 +52,12 @@ CameraWidget::~CameraWidget()
 void CameraWidget::cameraConnectionStatusChanged(bool isConnected) const
 {
    if (isConnected) {
-      emit newStatusMessage(tr("Connected to %1.").arg(camera->name()));
+      emit newStatusMessage(tr("Connected to %1.").arg(camera->id()));
       ui->pushButtonConnection->setText(tr("Connected"));
       ui->comboBoxReadMode->clear();
       ui->comboBoxReadMode->addItems(camera->readModes());
    } else {
-      emit newStatusMessage(tr("Disconnected from %1.").arg(camera->name()));
+      emit newStatusMessage(tr("Disconnected from %1.").arg(camera->id()));
       ui->comboBoxReadMode->clear();
       ui->pushButtonConnection->setText(tr("Disconnected"));
    }
@@ -68,6 +80,17 @@ void CameraWidget::readModeChanged(QString newMode) const
       emit newStatusMessage(tr("Setting read mode to %1 failed.").arg(newMode));
       ui->comboBoxReadMode->setCurrentIndex(-1);
    }
+}
+
+void CameraWidget::showCameraInfoDialog() const
+{
+   CameraInfoDialog dialog(camera);
+   dialog.exec();
+}
+
+void CameraWidget::showContextMenu(const QPoint & point) const
+{
+   cameraMenu->exec(mapToGlobal(point));
 }
 
 void CameraWidget::transferModeChanged(QHYCamera::DataTransferMode newMode) const

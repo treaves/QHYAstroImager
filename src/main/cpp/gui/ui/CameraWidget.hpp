@@ -6,9 +6,12 @@
  * For the license, see the root LICENSE file.
  */
 
+#include <QPoint>
 #include <QWidget>
 
 #include "QHYCamera.hpp"
+
+class QMenu;
 
 namespace Ui
 {
@@ -33,11 +36,13 @@ private slots:
    void cameraConnectionStatusChanged(bool isConnected) const;
    void connectToCamera(bool connect) const;
    void readModeChanged(QString newMode) const;
+   void showCameraInfoDialog() const;
+   void showContextMenu(const QPoint & point) const;
    void transferModeChanged(QHYCamera::DataTransferMode newMode) const;
    void transferModeSelected(QString modeName) const;
 
 private:
-
    Ui::CameraWidget * ui;
    QHYCamera *        camera;
+   QMenu *            cameraMenu;
 };

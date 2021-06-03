@@ -5,11 +5,27 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/ui)
 
 # ######################################################################################################################
 # ##########                                          Source Files                                            ##########
-set(UIS ui/About.ui ui/CameraWidget.ui ui/MainWindow.ui)
+set(UIS
+    ui/About.ui
+    ui/CameraInfoDialog.ui
+    ui/CameraWidget.ui
+    ui/MainWindow.ui
+)
 
-set(SOURCES main.cpp ui/About.cpp ui/CameraWidget.cpp ui/MainWindow.cpp)
+set(SOURCES
+    main.cpp
+    ui/About.cpp
+    ui/CameraInfoDialog.cpp
+    ui/CameraWidget.cpp
+    ui/MainWindow.cpp
+)
 
-set(HEADERS ui/About.hpp ui/CameraWidget.hpp ui/MainWindow.hpp)
+set(HEADERS
+    ui/About.hpp
+    ui/CameraInfoDialog.hpp
+    ui/CameraWidget.hpp
+    ui/MainWindow.hpp
+)
 
 # ######################################################################################################################
 # ##########                                       Executable Creation                                        ##########
@@ -46,7 +62,6 @@ else()
     ${RESOURCES}
   )
 endif()
-
 
 target_link_libraries(
   QHYAstroImager
