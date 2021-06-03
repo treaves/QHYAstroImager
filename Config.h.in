@@ -29,4 +29,8 @@ const int           BufferSizeFirmwareVersion = 32;
 
 const int           FiveSeconds               = 5000; // in milliseconds
 
+const int           Align16Bit                = 16;
 const int           Align32Bit                = 32;
+
+const int           BitDepth8                 = 8;
+const int           BitDepth16                = 16;

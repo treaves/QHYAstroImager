@@ -5,16 +5,54 @@
  */
 
 #include "QHYCamera.hpp"
+
 #include <QDebug>
-#include <qhyccd.h>
+#include <QStringBuilder>
 #include <QTimer>
+
+#include <qhyccd.h>
 
 QHYCamera::QHYCamera(QByteArray name, QObject * parent)
    : QObject(parent)
    , handle(nullptr)
-   , id("")
    , model(name.left(name.lastIndexOf('-')))
-   , m_name(name)
+   , m_id(name)
+   , m_transferMode(SingleImage)
+   , bayerMatrix(0)
+   , bitDepth(0)
+   , bitsPerPixel(0)
+   , chipHeight(0.0)
+   , chipWidth(0.0)
+   , filterCount(0)
+   , gain(0.0)
+   , imageHeight(0.0)
+   , imageWidth(0.0)
+   , maxFrameLength(0)
+   , offset(0.0)
+   , pixelHeight(0.0)
+   , pixelWidth(0.0)
+   , supports16Bit(false)
+   , supportsBinning(false)
+   , supportsChipChamberCyclePump(false)
+   , supportsChipTempSensor(false)
+   , supportsColor(false)
+   , supportsCooler(false)
+   , supportsFPNCalibration(false)
+   , supportsFilterWheel(false)
+   , supportsFineTone(false)
+   , supportsGPS(false)
+   , supportsGain(false)
+   , supportsHighSpeed(false)
+   , supportsHumidity(false)
+   , supportsMechanicalShutter(false)
+   , supportsOffset(false)
+   , supportsPressure(false)
+   , supportsShutterMotorHeating(false)
+   , supportsSignalClamp(false)
+   , supportsTECOverProtection(false)
+   , supportsTrigger(false)
+   , supportsUSBSpeedSetting(false)
+   , supportsUSBTraffic(false)
 {
 }
 
@@ -30,7 +68,7 @@ QHYCamera::~QHYCamera() noexcept
 /* ***************************************************************************************************************** */
 void QHYCamera::connect()
 {
-   handle = OpenQHYCCD(m_name.data());
+   handle = OpenQHYCCD(m_id.data());
    if (handle != nullptr) {
       initializeReadModes();
    }
@@ -44,7 +82,7 @@ void QHYCamera::disconnect()
       if (qhyResult == QHYCCD_SUCCESS) {
          handle = nullptr;
       } else {
-         qWarning() << tr("There was an error disconnecting from %1.").arg(QLatin1String(m_name));
+         qWarning() << tr("There was an error disconnecting from %1.").arg(QLatin1String(m_id));
       }
    }
    emit connectedChanged(isConnected());
@@ -57,7 +95,7 @@ auto QHYCamera::isConnected() -> bool
 
 auto QHYCamera::name() const -> QString
 {
-   return QString(m_name);
+   return QString(m_id);
 }
 
 auto QHYCamera::readMode() const -> QString
@@ -97,19 +135,18 @@ void QHYCamera::setReadAndTransferModes(QString readMode, QHYCamera::DataTransfe
                      emit transferModeChanged(mode);
                      readCameraDetails();
                   } else {
-                     qWarning() << tr("Could not initialize camera %1").arg(QLatin1String(m_name));
+                     qWarning() << tr("Could not initialize camera %1").arg(QLatin1String(m_id));
                      disconnect();
                   }
                } else {
-                  qWarning()
-                    << tr("Could not set stream mode of camera %1 to %2.").arg(QLatin1String(m_name)).arg(mode);
+                  qWarning() << tr("Could not set stream mode of camera %1 to %2.").arg(QLatin1String(m_id)).arg(mode);
                   disconnect();
                }
             } else {
                qWarning() << tr("Could not set camera %1 read mode to %2 with index %3")
-                               .arg(QLatin1String(m_name))
-                               .arg(readMode)
-                               .arg(m_readModes.value(readMode));
+                              .arg(QLatin1String(m_id))
+                              .arg(readMode)
+                              .arg(m_readModes.value(readMode));
                disconnect();
             }
          }
@@ -135,7 +172,7 @@ void QHYCamera::initializeReadModes()
             auto       status = GetQHYCCDReadModeName(handle, readModeIndex, readModeNameBuffer.data());
             if (status == QHYCCD_SUCCESS) {
                m_readModes[QString(readModeNameBuffer)] = readModeIndex;
-               qDebug() << "Found " << QString(readModeNameBuffer) << " read mode.";
+               qDebug() << "Found " << QString(readModeNameBuffer) << "read mode.";
             } else {
                qWarning() << tr("GetQHYCCDReadModeName failed with code %1.").arg(status);
                disconnect();
@@ -166,7 +203,7 @@ void QHYCamera::readChipInfo()
                                          &pixelHeight,
                                          reinterpret_cast<uint32_t *>(&bitsPerPixel)); // NOLINT
       if (qhyResult != QHYCCD_SUCCESS) {
-         qWarning() << tr("Error reading chip information for camera %1").arg(QLatin1String(m_name));
+         qWarning() << tr("Error reading chip information for camera %1").arg(QLatin1String(m_id));
       }
    }
 }
@@ -184,22 +221,22 @@ void QHYCamera::readControlValues()
    supportsOffset = IsQHYCCDControlAvailable(handle, CONTROL_OFFSET) == QHYCCD_SUCCESS;
    if (supportsOffset) {
       qhyResult =
-        GetQHYCCDParamMinMaxStep(handle, CONTROL_OFFSET, &offsetRange.min, &offsetRange.max, &offsetRange.step);
+        GetQHYCCDParamMinMaxStep(handle, CONTROL_OFFSET, &rangeOffset.min, &rangeOffset.max, &rangeOffset.step);
       if (qhyResult == QHYCCD_ERROR) {
-         offsetRange.max  = 0.0;
-         offsetRange.min  = 0.0;
-         offsetRange.step = 0.0;
+         rangeOffset.max  = 0.0;
+         rangeOffset.min  = 0.0;
+         rangeOffset.step = 0.0;
       }
    }
    offset       = GetQHYCCDParam(handle, CONTROL_OFFSET);
 
    supportsGain = IsQHYCCDControlAvailable(handle, CONTROL_GAIN) == QHYCCD_SUCCESS;
    if (supportsGain) {
-      qhyResult = GetQHYCCDParamMinMaxStep(handle, CONTROL_GAIN, &gainRange.min, &gainRange.max, &gainRange.step);
+      qhyResult = GetQHYCCDParamMinMaxStep(handle, CONTROL_GAIN, &rangeGain.min, &rangeGain.max, &rangeGain.step);
       if (qhyResult == QHYCCD_ERROR) {
-         gainRange.max  = 0.0;
-         gainRange.min  = 0.0;
-         gainRange.step = 0.0;
+         rangeGain.max  = 0.0;
+         rangeGain.min  = 0.0;
+         rangeGain.step = 0.0;
       }
    }
    gain = GetQHYCCDParam(handle, CONTROL_GAIN);
@@ -232,16 +269,51 @@ void QHYCamera::readControlValues()
    supportsHighSpeed  = IsQHYCCDControlAvailable(handle, CONTROL_SPEED) == QHYCCD_SUCCESS;
    supportsUSBTraffic = IsQHYCCDControlAvailable(handle, CONTROL_USBTRAFFIC) == QHYCCD_SUCCESS;
    if (supportsUSBTraffic) {
-      qhyResult =
-        GetQHYCCDParamMinMaxStep(handle, CONTROL_USBTRAFFIC, &usbTraffic.min, &usbTraffic.max, &usbTraffic.step);
+      qhyResult = GetQHYCCDParamMinMaxStep(
+        handle, CONTROL_USBTRAFFIC, &rangeUSBTraffic.min, &rangeUSBTraffic.max, &rangeUSBTraffic.step);
       if (qhyResult == QHYCCD_ERROR) {
-         usbTraffic.max  = 0.0;
-         usbTraffic.min  = 0.0;
-         usbTraffic.step = 0.0;
+         rangeUSBTraffic.max  = 0.0;
+         rangeUSBTraffic.min  = 0.0;
+         rangeUSBTraffic.step = 0.0;
       }
    }
 
    supportsGPS = IsQHYCCDControlAvailable(handle, CAM_GPS) == QHYCCD_SUCCESS;
+
+   if (IsQHYCCDControlAvailable(handle, CONTROL_TRANSFERBIT) == QHYCCD_SUCCESS) {
+      if (IsQHYCCDControlAvailable(handle, CAM_16BITS) == QHYCCD_SUCCESS) {
+         supports16Bit = true;
+         bitDepth      = BitDepth16;
+      } else {
+         supports16Bit = false;
+         bitDepth      = BitDepth8;
+      }
+      qhyResult = SetQHYCCDParam(handle, CONTROL_TRANSFERBIT, bitDepth);
+   }
+
+   if (IsQHYCCDControlAvailable(handle, CONTROL_CFWPORT) == QHYCCD_SUCCESS) {
+      auto filtersSupported = GetQHYCCDParam(handle, CONTROL_CFWSLOTSNUM);
+      if (filtersSupported > 9) {
+         filterCount = 9;
+      } else {
+         filterCount = static_cast<int>(filtersSupported);
+      }
+   }
+
+   supportsCooler              = IsQHYCCDControlAvailable(handle, CONTROL_COOLER) == QHYCCD_SUCCESS;
+   supportsHumidity            = IsQHYCCDControlAvailable(handle, CAM_HUMIDITY) == QHYCCD_SUCCESS;
+   supportsPressure            = IsQHYCCDControlAvailable(handle, CAM_PRESSURE) == QHYCCD_SUCCESS;
+   supportsMechanicalShutter   = IsQHYCCDControlAvailable(handle, CAM_MECHANICALSHUTTER) == QHYCCD_SUCCESS;
+   supportsTrigger             = IsQHYCCDControlAvailable(handle, CAM_TRIGER_INTERFACE) == QHYCCD_SUCCESS;
+   supportsShutterMotorHeating = IsQHYCCDControlAvailable(handle, CAM_SHUTTERMOTORHEATING_INTERFACE) == QHYCCD_SUCCESS;
+   supportsTECOverProtection   = IsQHYCCDControlAvailable(handle, CAM_TECOVERPROTECT_INTERFACE) == QHYCCD_SUCCESS;
+   supportsSignalClamp         = IsQHYCCDControlAvailable(handle, CAM_SINGNALCLAMP_INTERFACE) == QHYCCD_SUCCESS;
+   supportsFPNCalibration      = IsQHYCCDControlAvailable(handle, CAM_CALIBRATEFPN_INTERFACE) == QHYCCD_SUCCESS;
+   supportsChipTempSensor  = IsQHYCCDControlAvailable(handle, CAM_CHIPTEMPERATURESENSOR_INTERFACE) == QHYCCD_SUCCESS;
+   supportsUSBSpeedSetting = IsQHYCCDControlAvailable(handle, CAM_USBREADOUTSLOWEST_INTERFACE) == QHYCCD_SUCCESS;
+   supportsChipChamberCyclePump = IsQHYCCDControlAvailable(handle, CONTROL_SensorChamberCycle_PUMP) == QHYCCD_SUCCESS;
+
+   maxFrameLength               = static_cast<int>(GetQHYCCDMemLength(handle));
 }
 
 void QHYCamera::readFirmwareVersion()
@@ -258,9 +330,9 @@ void QHYCamera::readFirmwareVersion()
                              .arg(year)
                              .arg(firmwareVersionBuffer[0] & ~0xf0U)
                              .arg(firmwareVersionBuffer[1]); // NOLINT
-         qDebug() << "Firmware version:" << firmwareVersion;
+         qDebug() << "Firmware version:" % firmwareVersion;
       } else {
-         qDebug() << "Error reading GetQHYCCDFWVersion";
+         qWarning() << "Error reading GetQHYCCDFWVersion";
       }
    }
 }
@@ -276,7 +348,7 @@ void QHYCamera::readFPGAVersion()
                           .arg(fpgaVersionBuffer[1])
                           .arg(fpgaVersionBuffer[2])
                           .arg(fpgaVersionBuffer[3]);
-         qDebug() << "FPGA1 version:" << fpga1Version;
+         qDebug() << "FPGA1 version:" % fpga1Version;
 
          qhyResult = GetQHYCCDFPGAVersion(handle, 1, fpgaVersionBuffer.data());
          if (qhyResult == QHYCCD_SUCCESS) {
@@ -285,12 +357,19 @@ void QHYCamera::readFPGAVersion()
                              .arg(fpgaVersionBuffer[1])
                              .arg(fpgaVersionBuffer[2])
                              .arg(fpgaVersionBuffer[3]);
-            qDebug() << "FPGA2 version:" << fpga2Version;
+            qDebug() << "FPGA2 version:" % fpga2Version;
          } else {
-            qDebug() << "Error reading second GetQHYCCDFPGAVersion";
+            qWarning() << "Error reading second GetQHYCCDFPGAVersion";
          }
       } else {
-         qDebug() << "Error reading first GetQHYCCDFPGAVersion";
+         qWarning() << "Error reading first GetQHYCCDFPGAVersion";
       }
    }
+}
+/* ****************************************************************************************************************** */
+// MARK: - Operators
+/* ****************************************************************************************************************** */
+QHYCamera::operator QString() const
+{
+   return QString("QHYCamera[") % "]";
 }
